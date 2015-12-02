@@ -111,4 +111,6 @@ var ViewModel = {
     }
 };
 
-ko.applyBindings(ViewModel);
+window.onload = function(){
+  ko.applyBindings(ViewModel);
+}

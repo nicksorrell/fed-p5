@@ -42,6 +42,12 @@ html, body {
   cursor: pointer;
 }
 
+#menu input {
+  display: block;
+  padding: 0.25em;
+  width: 90%;
+}
+
 #map {
   width: 80vw;
   height: 100%;
