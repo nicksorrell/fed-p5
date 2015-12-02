@@ -1,0 +1,48 @@
+html, body {
+  height: 100%;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+#main {
+  display: flex;
+  height: 100%;
+}
+
+#menu {
+  width: 20vw;
+  padding: 10px;
+  background: #333;
+  color: #fff;
+  border-right: 1px solid #ccc;
+  box-sizing: border-box;
+  overflow: hidden;
+  overflow-y: scroll;
+}
+
+#menu h1 {
+  padding-bottom: 0.5em;
+  margin-bottom: 0.5em;
+  border-bottom: 1px solid #888;
+}
+
+#menu ul {
+  padding: 0;
+}
+
+#menu ul li {
+  list-style-type: none;
+  padding: 0.5em 0;
+  border-bottom: 1px solid #555;
+}
+
+#menu ul li:hover {
+  background: #555;
+  cursor: pointer;
+}
+
+#map {
+  width: 80vw;
+  height: 100%;
+}

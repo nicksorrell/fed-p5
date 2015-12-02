@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Let's Visit Valve!</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="main">
+    <div id="menu">
+      <h1>Let's Visit Valve!</h1>
+      <input type="text">
+      <a href="#">food</a>
+      <a href="#">lodging</a>
+      <a href="#">bus</a>
+      <a href="#">reset</a>
+      <ul data-bind="foreach: filteredPlaces">
+          <li data-bind="text: $data.name"></li>
+        </ul>
+    </div>
+    <div id="map"></div>
+  </div>
+
+  <script src="js/vendor/knockout-3.4.0.js"></script>
+  <script src="js/app.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEVIjqsDpG6qcwFdTR6uQ6RDs2YZqpLh0&libraries=places&callback=ViewModel.initMap" async defer></script>
+</body>
+</html>
