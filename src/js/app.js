@@ -9,7 +9,7 @@ function ViewModel() {
 
     this.filteredPlaces = ko.observableArray([]);
 
-    this.selectedPlace = ko.observable();
+    this.selectedPlace = ko.observable( { id:null } );
 
     this.initMap = function(){
       map = new google.maps.Map(document.getElementById('map'), {
@@ -56,9 +56,20 @@ function ViewModel() {
 
     };
 
-    this.showDetails = function(id){
+    this.showDetails = function(id) {
       var markers = _this.markers();
       var place = typeof(id) != "string" ? this : _this.getFilteredPlaceById(id);
+
+      if(_this.selectedPlace().id == place.id) {
+        for(var x = 0, y = markers.length; x < y; x++) {
+          if(markers[x].marker.getAnimation() == 1){
+            markers[x].marker.setAnimation(null);
+          }
+        }
+        _this.selectedPlace( { id:null } );
+        infowindow.close();
+        return;
+      }
 
       for(var i = 0, j = markers.length; i < j; i++) {
         if(markers[i].id == place.id ){
@@ -74,7 +85,7 @@ function ViewModel() {
       }
 
 
-      document.getElementById('menu').scrollTop = document.getElementsByClassName('active')[0].getBoundingClientRect().top + document.getElementById('menu').scrollTop - 50;
+      document.getElementById('menu').scrollTop = document.getElementsByClassName('active')[0].getBoundingClientRect().top + document.getElementById('menu').scrollTop - 75;
     };
 
     this.getFilteredPlaceById = function(id){

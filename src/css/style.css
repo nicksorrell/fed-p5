@@ -27,8 +27,14 @@ html, body {
   border-bottom: 1px solid #888;
 }
 
+#menu a, #menu a:visited {
+  color: #fff;
+}
+
 #menu ul {
   padding: 0;
+  padding-top: 0.5em;
+  border-top: 3px solid #888;
 }
 
 #menu ul li {
