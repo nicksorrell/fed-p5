@@ -1,13 +1,15 @@
 function ViewModel() {
     var _this = this;
 
-    this.valve = {lat: 47.614374, lng: -122.194059},
+    this.valve = {lat: 47.614374, lng: -122.194059};
 
-    this.markers = ko.observableArray([]),
+    this.markers = ko.observableArray([]);
 
-    this.allPlaces = ko.observableArray([]),
+    this.allPlaces = ko.observableArray([]);
 
-    this.filteredPlaces = ko.observableArray([]),
+    this.filteredPlaces = ko.observableArray([]);
+
+    this.selectedPlace = ko.observable();
 
     this.initMap = function(){
       map = new google.maps.Map(document.getElementById('map'), {
@@ -26,7 +28,7 @@ function ViewModel() {
       });
 
       this.makeRequests();
-    },
+    };
 
     this.makeRequests = function(){
       var service = new google.maps.places.PlacesService(map);
@@ -52,7 +54,37 @@ function ViewModel() {
       }
       service.nearbySearch(lodgingRequest, this.addResultsToList);
 
-    },
+    };
+
+    this.showDetails = function(id){
+      var markers = _this.markers();
+      var place = typeof(id) != "string" ? this : _this.getFilteredPlaceById(id);
+
+      for(var i = 0, j = markers.length; i < j; i++) {
+        if(markers[i].id == place.id ){
+          _this.selectedPlace(place);
+          markers[i].marker.setAnimation(google.maps.Animation.BOUNCE);
+          infowindow.setContent(place.name);
+          infowindow.open(map, markers[i].marker);
+        } else {
+          if(markers[i].marker.getAnimation() == 1){
+            markers[i].marker.setAnimation(null);
+          }
+        }
+      }
+
+
+      document.getElementById('menu').scrollTop = document.getElementsByClassName('active')[0].getBoundingClientRect().top + document.getElementById('menu').scrollTop - 50;
+    };
+
+    this.getFilteredPlaceById = function(id){
+      for(var i = 0, j = this.filteredPlaces().length; i < j; i++){
+        if(this.filteredPlaces()[i].id == id){
+          return this.filteredPlaces()[i];
+        }
+      }
+      return null;
+    };
 
     this.addResultsToList = function(results, status){
       if (status === google.maps.places.PlacesServiceStatus.OK) {
@@ -73,6 +105,7 @@ function ViewModel() {
 
               // When the loop is finished, if we have a unique entry, add it to the main list
               if(!duplicate){
+                results[i].active = false;
                 _this.allPlaces.push(results[i]);
                 _this.filteredPlaces.push(results[i]);
                 _this.createMarker(results[i]);
@@ -80,7 +113,7 @@ function ViewModel() {
           }
         }
       }
-    },
+    };
 
     this.createMarker = function(place) {
       var placeLoc = place.geometry.location;
@@ -100,27 +133,31 @@ function ViewModel() {
           break;
       }
 
-      var marker = new google.maps.Marker({
-        icon: image,
-        map: map,
-        position: place.geometry.location
+      var markerObj = {
+        id: place.id,
+        marker: new google.maps.Marker({
+          icon: image,
+          map: map,
+          position: place.geometry.location
+        })
+      };
+
+      google.maps.event.addListener(markerObj.marker, 'click', function() {
+        _this.showDetails(place.id);
       });
 
-      marker.id = place.id;
+      this.markers.push(markerObj);
+    };
 
-      google.maps.event.addListener(marker, 'click', function() {
-        infowindow.setContent(place.name);
-        infowindow.open(map, this);
-      });
-
-      this.markers.push(marker);
+    this.filterResults = function(data){
+      console.log(data);
     }
 };
 
 var app = {
     viewmodel: new ViewModel()
-}
+};
 
 window.onload = function(){
   ko.applyBindings(app.viewmodel);
-}
+};

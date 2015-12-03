@@ -16,7 +16,7 @@
       <a href="#">bus</a>
       <a href="#">reset</a>
       <ul data-bind="foreach: filteredPlaces">
-          <li data-bind="text: $data.name"></li>
+          <li data-bind="text: $data.name, click: $parent.showDetails, css: { active: $data == $parent.selectedPlace()}"></li>
         </ul>
     </div>
     <div id="map"></div>

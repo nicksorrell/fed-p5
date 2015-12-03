@@ -42,6 +42,10 @@ html, body {
   cursor: pointer;
 }
 
+#menu ul li.active, #menu ul li.active:hover {
+  background: #4673AD;
+}
+
 #menu input {
   display: block;
   padding: 0.25em;
