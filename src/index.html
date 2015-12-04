@@ -10,16 +10,17 @@
   <div id="main">
     <div id="menu">
       <h1>Let's Visit Valve!</h1>
-      <p>Search and filters don't work yet ;)</p>
+      <p>TODO: create search functionality</p>
       <input type="text">
       <p>Filter by:</p>
-      <a href="#">food</a>
-      <a href="#">lodging</a>
-      <a href="#">bus</a>
-      <a href="#">reset</a>
+      <nav data-bind="foreach: filters">
+        <a href="#" data-bind="text: $data.label, click: $parent.filterBy, css: {active: $data.active}, attr: {'data-filter': $data.label}"></a>
+      </nav>
+
       <ul data-bind="foreach: filteredPlaces">
-          <li data-bind="text: $data.name, click: $parent.showDetails, css: { active: $data == $parent.selectedPlace()}"></li>
-        </ul>
+        <li data-bind="text: $data.name, click: $parent.showDetails, css: { active: $data == $parent.selectedPlace() }"></li>
+      </ul>
+      <img src="img/miclogo-88x31.gif" alt="Map Markers">
     </div>
     <div id="map"></div>
   </div>

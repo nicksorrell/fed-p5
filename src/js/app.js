@@ -1,4 +1,6 @@
 function ViewModel() {
+   "use strict";
+
     var _this = this;
 
     this.valve = {lat: 47.614374, lng: -122.194059};
@@ -9,7 +11,16 @@ function ViewModel() {
 
     this.filteredPlaces = ko.observableArray([]);
 
-    this.selectedPlace = ko.observable( { id:null } );
+    this.selectedPlace = ko.observable({
+      id:null
+    });
+
+    this.filters = ko.observableArray([
+      { label: 'food', active: false, terms: ['restaurant', 'bar'] },
+      { label: 'lodging', active: false, terms: ['lodging'] },
+      { label: 'bus', active: false, terms: ['bus_station'] },
+      { label: 'reset', active: false, terms: []}
+    ]);
 
     this.initMap = function(){
       map = new google.maps.Map(document.getElementById('map'), {
@@ -37,21 +48,21 @@ function ViewModel() {
         location: this.valve,
         types: ['restaurant', 'bar'],
         rankBy: google.maps.places.RankBy.DISTANCE
-      }
+      };
       service.nearbySearch(foodRequest, this.addResultsToList);
 
       var busRequest = {
         location: this.valve,
         types: ['bus_station'],
         rankBy: google.maps.places.RankBy.DISTANCE
-      }
+      };
       service.nearbySearch(busRequest, this.addResultsToList);
 
       var lodgingRequest = {
         location: this.valve,
         types: ['lodging'],
         rankBy: google.maps.places.RankBy.DISTANCE
-      }
+      };
       service.nearbySearch(lodgingRequest, this.addResultsToList);
 
     };
@@ -160,11 +171,76 @@ function ViewModel() {
       this.markers.push(markerObj);
     };
 
-    this.filterResults = function(data){
-      console.log(data);
-    }
-};
+    this.filterBy = function() {
+      // Get the selected filter for lookup, and init vars for the function
+      var filterType = event.target.getAttribute('data-filter');
+      var tempArray = [];
+      var anyFilterActive = false;
+      var filter;
 
+      // Check to see if there are no active filters
+      for(filter in _this.filters()){
+        if(_this.filters()[filter].active) {
+          anyFilterActive = true;
+        }
+      }
+
+      // If the reset option is selected, set all filters to inactive. Or if no filters are active anyway...
+      if(filterType == 'reset' || anyFilterActive){
+        // Put all our results in the temp array since we're not filtering
+        tempArray = _this.allPlaces();
+        for(filter in _this.filters()){
+          _this.filters.replace(_this.filters()[filter], {
+            label: _this.filters()[filter].label,
+            active : false,
+            terms: _this.filters()[filter].terms
+          });
+        }
+        // Otherwise, toggle the selected filter's active state in the filters observableArray
+      } else {
+        for(filter in _this.filters()){
+          if(_this.filters()[filter].label == filterType) {
+            _this.filters.replace(_this.filters()[filter], {
+              label: _this.filters()[filter].label,
+              active : !_this.filters()[filter].active,
+              terms: _this.filters()[filter].terms
+            });
+          }
+        }
+
+        // look at each filter, if it is active, push matches into the temp array...
+        for(filter in _this.filters()){
+          if(_this.filters()[filter].active === true){
+            for(var i = 0, j = _this.allPlaces().length; i < j; i++) {
+              for(var k = 0, l = _this.filters()[filter].terms.length; k < l; k++){
+                if(_this.allPlaces()[i].types[0] == _this.filters()[filter].terms[k]) {
+                  tempArray.push(_this.allPlaces()[i]);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // finally, filter the results and display them
+      _this.filteredPlaces(tempArray);
+      _this.filterMarkers();
+    };
+
+    this.filterMarkers = function() {
+      for(var i = 0, j = this.markers().length; i < j; i++) {
+        this.markers()[i].marker.setMap(null);
+        for(var k = 0, l = this.filteredPlaces().length; k < l; k++) {
+          if(this.markers()[i].id == this.filteredPlaces()[k].id) {
+            this.markers()[i].marker.setMap(map);
+          }
+        }
+      }
+    };
+}
+
+var map;
+var infowindow;
 var app = {
     viewmodel: new ViewModel()
 };
