@@ -11,10 +11,10 @@
     <div id="menu">
       <h1>Let's Visit Valve!</h1>
       <p>TODO: create search functionality</p>
-      <input type="text">
-      <p>Filter by:</p>
+      <input type="text" placeholder="Search..." autocomplete="off" data-bind="textInput: query">
+      <p>Filter listings by:</p>
       <nav data-bind="foreach: filters">
-        <a href="#" data-bind="text: $data.label, click: $parent.filterBy, css: {active: $data.active}, attr: {'data-filter': $data.label}"></a>
+        <a href="#" data-bind="text: $data.label, click: $parent.filterByType, css: {active: $data.active}, attr: {'data-filter': $data.label}"></a>
       </nav>
 
       <ul data-bind="foreach: filteredPlaces">

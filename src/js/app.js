@@ -15,6 +15,8 @@ function ViewModel() {
       id:null
     });
 
+    this.query = ko.observable('');
+
     this.filters = ko.observableArray([
       { label: 'food', active: false, terms: ['restaurant', 'bar'] },
       { label: 'lodging', active: false, terms: ['lodging'] },
@@ -171,12 +173,24 @@ function ViewModel() {
       this.markers.push(markerObj);
     };
 
-    this.filterBy = function() {
+    this.filterByType = function(query) {
+
       // Get the selected filter for lookup, and init vars for the function
       var filterType = event.target.getAttribute('data-filter');
       var tempArray = [];
       var anyFilterActive = false;
       var filter;
+
+      // Toggle the selected filter's active state in the filters observableArray
+      for(filter in _this.filters()){
+        if(_this.filters()[filter].label == filterType) {
+          _this.filters.replace(_this.filters()[filter], {
+            label: _this.filters()[filter].label,
+            active : !_this.filters()[filter].active,
+            terms: _this.filters()[filter].terms
+          });
+        }
+      }
 
       // Check to see if there are no active filters
       for(filter in _this.filters()){
@@ -186,7 +200,7 @@ function ViewModel() {
       }
 
       // If the reset option is selected, set all filters to inactive. Or if no filters are active anyway...
-      if(filterType == 'reset' || anyFilterActive){
+      if(filterType == 'reset' || !anyFilterActive){
         // Put all our results in the temp array since we're not filtering
         tempArray = _this.allPlaces();
         for(filter in _this.filters()){
@@ -196,18 +210,7 @@ function ViewModel() {
             terms: _this.filters()[filter].terms
           });
         }
-        // Otherwise, toggle the selected filter's active state in the filters observableArray
       } else {
-        for(filter in _this.filters()){
-          if(_this.filters()[filter].label == filterType) {
-            _this.filters.replace(_this.filters()[filter], {
-              label: _this.filters()[filter].label,
-              active : !_this.filters()[filter].active,
-              terms: _this.filters()[filter].terms
-            });
-          }
-        }
-
         // look at each filter, if it is active, push matches into the temp array...
         for(filter in _this.filters()){
           if(_this.filters()[filter].active === true){
@@ -237,6 +240,20 @@ function ViewModel() {
         }
       }
     };
+
+    this.search = function(query){
+      var tempArray = [];
+
+      for(var place in _this.allPlaces()) {
+        if(_this.allPlaces()[place].name.toLowerCase().indexOf(query.toLowerCase()) >= 0) {
+          tempArray.push(_this.allPlaces()[place]);
+        }
+      }
+
+      // finally, filter the results and display them
+      _this.filteredPlaces(tempArray);
+      _this.filterMarkers();
+    };
 }
 
 var map;
@@ -246,5 +263,6 @@ var app = {
 };
 
 window.onload = function(){
+  app.viewmodel.query.subscribe(app.viewmodel.search);
   ko.applyBindings(app.viewmodel);
 };
