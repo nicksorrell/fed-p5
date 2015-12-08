@@ -9,6 +9,10 @@ function ViewModel() {
 
     this.allPlaces = ko.observableArray([]);
 
+    // TO DO: make this the main filtration array, and have the type buttons filter this
+    // have it just show all places (blank search) for init state
+    this.searchedPlaces = ko.observableArray(this.allPlaces());
+
     this.filteredPlaces = ko.observableArray([]);
 
     this.selectedPlace = ko.observable({
@@ -17,11 +21,12 @@ function ViewModel() {
 
     this.query = ko.observable('');
 
+    this.searching = ko.observable(false);
+
     this.filters = ko.observableArray([
       { label: 'food', active: false, terms: ['restaurant', 'bar'] },
       { label: 'lodging', active: false, terms: ['lodging'] },
-      { label: 'bus', active: false, terms: ['bus_station'] },
-      { label: 'reset', active: false, terms: []}
+      { label: 'bus', active: false, terms: ['bus_station'] }
     ]);
 
     this.initMap = function(){
@@ -173,7 +178,7 @@ function ViewModel() {
       this.markers.push(markerObj);
     };
 
-    this.filterByType = function(query) {
+    this.filterByType = function() {
 
       // Get the selected filter for lookup, and init vars for the function
       var filterType = event.target.getAttribute('data-filter');
@@ -201,23 +206,49 @@ function ViewModel() {
 
       // If the reset option is selected, set all filters to inactive. Or if no filters are active anyway...
       if(filterType == 'reset' || !anyFilterActive){
-        // Put all our results in the temp array since we're not filtering
-        tempArray = _this.allPlaces();
-        for(filter in _this.filters()){
-          _this.filters.replace(_this.filters()[filter], {
-            label: _this.filters()[filter].label,
-            active : false,
-            terms: _this.filters()[filter].terms
-          });
+        if(_this.searching()){
+          tempArray = _this.searchedPlaces();
+          for(filter in _this.filters()){
+            _this.filters.replace(_this.filters()[filter], {
+              label: _this.filters()[filter].label,
+              active : false,
+              terms: _this.filters()[filter].terms
+            });
+          }
+        } else {
+          tempArray = _this.allPlaces();
+          for(filter in _this.filters()){
+            _this.filters.replace(_this.filters()[filter], {
+              label: _this.filters()[filter].label,
+              active : false,
+              terms: _this.filters()[filter].terms
+            });
+          }
         }
+        // Put all our results in the temp array since we're not filtering
+
       } else {
         // look at each filter, if it is active, push matches into the temp array...
-        for(filter in _this.filters()){
-          if(_this.filters()[filter].active === true){
-            for(var i = 0, j = _this.allPlaces().length; i < j; i++) {
-              for(var k = 0, l = _this.filters()[filter].terms.length; k < l; k++){
-                if(_this.allPlaces()[i].types[0] == _this.filters()[filter].terms[k]) {
-                  tempArray.push(_this.allPlaces()[i]);
+        if(_this.searching()){
+          for(filter in _this.filters()){
+            if(_this.filters()[filter].active === true){
+              for(var i = 0, j = _this.searchedPlaces().length; i < j; i++) {
+                for(var k = 0, l = _this.filters()[filter].terms.length; k < l; k++){
+                  if(_this.searchedPlaces()[i].types[0] == _this.filters()[filter].terms[k]) {
+                    tempArray.push(_this.searchedPlaces()[i]);
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          for(filter in _this.filters()){
+            if(_this.filters()[filter].active === true){
+              for(var m = 0, n = _this.allPlaces().length; m < n; m++) {
+                for(var o = 0, p = _this.filters()[filter].terms.length; o < p; o++){
+                  if(_this.allPlaces()[m].types[0] == _this.filters()[filter].terms[o]) {
+                    tempArray.push(_this.allPlaces()[m]);
+                  }
                 }
               }
             }
@@ -244,6 +275,10 @@ function ViewModel() {
     this.search = function(query){
       var tempArray = [];
 
+      if(query !== ''){
+        _this.searching(true);
+      }
+
       for(var place in _this.allPlaces()) {
         if(_this.allPlaces()[place].name.toLowerCase().indexOf(query.toLowerCase()) >= 0) {
           tempArray.push(_this.allPlaces()[place]);
@@ -251,8 +286,8 @@ function ViewModel() {
       }
 
       // finally, filter the results and display them
-      _this.filteredPlaces(tempArray);
-      _this.filterMarkers();
+      _this.searchedPlaces(tempArray);
+      _this.filterByType();
     };
 }
 
