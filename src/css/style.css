@@ -13,6 +13,7 @@ html, body {
 
 #menu {
   width: 20vw;
+  min-width: 200px;
   padding: 10px;
   background: #333;
   color: #fff;
@@ -55,6 +56,26 @@ html, body {
   list-style-type: none;
   padding: 0.75em 0;
   border-bottom: 1px solid #555;
+}
+
+#menu ul li::before {
+  content: "";
+  width: 15px;
+  height: 15px;
+  margin-right: 5px;
+  float: left;
+}
+
+#menu ul li.bus::before {
+  background: url('../img/menu-icons.png') 0 0;
+}
+
+#menu ul li.food::before {
+  background: url('../img/menu-icons.png') 0 30px;
+}
+
+#menu ul li.lodging::before {
+  background: url('../img/menu-icons.png') 0 15px;
 }
 
 #menu ul li:hover {

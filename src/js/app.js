@@ -24,10 +24,16 @@ function ViewModel() {
     this.searching = ko.observable(false);
 
     this.filters = ko.observableArray([
-      { label: 'food', active: false, terms: ['restaurant', 'bar'] },
-      { label: 'lodging', active: false, terms: ['lodging'] },
-      { label: 'bus', active: false, terms: ['bus_station'] }
+      { label: 'Food', active: false, terms: ['restaurant', 'bar'] },
+      { label: 'Lodging', active: false, terms: ['lodging'] },
+      { label: 'Bus', active: false, terms: ['bus_station'] }
     ]);
+
+    this.sortArrayByAlpha = function (a, b){
+      if(a.name > b.name) return 1;
+      if(a.name < b.name) return -1;
+      return 0;
+    };
 
     this.initMap = function(){
       map = new google.maps.Map(document.getElementById('map'), {
@@ -38,11 +44,18 @@ function ViewModel() {
       infowindow = new google.maps.InfoWindow();
 
       var image = 'img/valve.png';
-      var marker = new google.maps.Marker({
+      var valveMarker = new google.maps.Marker({
         map: map,
         position: this.valve,
         animation: google.maps.Animation.DROP,
-        icon: image
+        icon: image,
+        title: 'Valve'
+      });
+
+      google.maps.event.addListener(valveMarker, 'click', function() {
+        var animation = (valveMarker.getAnimation() == null ? google.maps.Animation.BOUNCE : null);
+        console.log(animation);
+        valveMarker.setAnimation(animation);
       });
 
       this.makeRequests();
@@ -137,6 +150,7 @@ function ViewModel() {
                 results[i].active = false;
                 _this.allPlaces.push(results[i]);
                 _this.filteredPlaces.push(results[i]);
+                _this.filteredPlaces(_this.filteredPlaces().sort(_this.sortArrayByAlpha));
                 _this.createMarker(results[i]);
               }
           }
@@ -167,7 +181,8 @@ function ViewModel() {
         marker: new google.maps.Marker({
           icon: image,
           map: map,
-          position: place.geometry.location
+          position: place.geometry.location,
+          title: place.name
         })
       };
 
@@ -257,6 +272,7 @@ function ViewModel() {
       }
 
       // finally, filter the results and display them
+      tempArray.sort(_this.sortArrayByAlpha);
       _this.filteredPlaces(tempArray);
       _this.filterMarkers();
     };

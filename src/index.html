@@ -10,6 +10,7 @@
   <div id="main">
     <div id="menu">
       <h1>Let's Visit Valve!</h1>
+      <p>LaGrange multipliers reliability motion axis flexibility arm save autonomous exponential.</p>
       <input type="text" placeholder="Search..." autocomplete="off" data-bind="textInput: query">
       <p>Filter listings by:</p>
       <nav data-bind="foreach: filters">
@@ -17,7 +18,13 @@
       </nav>
 
       <ul data-bind="foreach: filteredPlaces">
-        <li data-bind="text: $data.name, click: $parent.showDetails, css: { active: $data == $parent.selectedPlace() }"></li>
+        <li data-bind="text: $data.name, click: $parent.showDetails,
+        css: {
+          active: $data == $parent.selectedPlace(),
+          bus: $data.types[0] == 'bus_station',
+          food: $data.types[0] == 'restaurant' || $data.types[0] == 'bar',
+          lodging: $data.types[0] == 'lodging'
+        }"></li>
       </ul>
       <img src="img/miclogo-88x31.gif" alt="Map Markers">
     </div>
