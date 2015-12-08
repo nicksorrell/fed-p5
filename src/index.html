@@ -10,9 +10,11 @@
   <div id="main">
     <div id="menu">
       <h1>Let's Visit Valve!</h1>
-      <p>LaGrange multipliers reliability motion axis flexibility arm save autonomous exponential.</p>
-      <input type="text" placeholder="Search..." autocomplete="off" data-bind="textInput: query">
-      <p>Filter listings by:</p>
+      <p>TODO: Add in third-party API data</p>
+      <p><a href="#" data-bind="text: valveMsg, click: showValve, css: {active: valveShown}"></a></p>
+      <label for="search"><p>Filter listings by name:</p></label>
+      <input type="text" name="search" placeholder="e.g., sushi" autocomplete="off" data-bind="textInput: query">
+      <p>Filter listings by type:</p>
       <nav data-bind="foreach: filters">
         <a href="#" data-bind="text: $data.label, click: $parent.filterByType, css: {active: $data.active}, attr: {'data-filter': $data.label}"></a>
       </nav>
@@ -26,6 +28,7 @@
           lodging: $data.types[0] == 'lodging'
         }"></li>
       </ul>
+      <p>Special thanks to:</p>
       <img src="img/miclogo-88x31.gif" alt="Map Markers">
     </div>
     <div id="map"></div>

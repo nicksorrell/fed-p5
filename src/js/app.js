@@ -1,9 +1,27 @@
+var map;
+var infowindow;
+var valveInfowindow;
+var app = {
+    viewmodel: new ViewModel()
+};
+
 function ViewModel() {
    "use strict";
 
     var _this = this;
 
-    this.valve = {lat: 47.614374, lng: -122.194059};
+    this.valve = {
+      coords: {
+        lat: 47.614374,
+        lng: -122.194059
+      },
+      name: 'Valve Corporation',
+      address: '10900 NE 4th St, Bellevue, WA 98004'
+    };
+
+    this.valveMarker = {};
+
+    this.valveShown = ko.observable(false);
 
     this.markers = ko.observableArray([]);
 
@@ -23,6 +41,14 @@ function ViewModel() {
 
     this.searching = ko.observable(false);
 
+    this.valveMsg = ko.computed(function(){
+      if(_this.valveShown()) {
+        return "There!";
+      } else {
+        return "So where is Valve?";
+      }
+    }, this);
+
     this.filters = ko.observableArray([
       { label: 'Food', active: false, terms: ['restaurant', 'bar'] },
       { label: 'Lodging', active: false, terms: ['lodging'] },
@@ -37,49 +63,72 @@ function ViewModel() {
 
     this.initMap = function(){
       map = new google.maps.Map(document.getElementById('map'), {
-        center: this.valve,
+        center: this.valve.coords,
         zoom: 16
       });
 
       infowindow = new google.maps.InfoWindow();
+      valveInfowindow = new google.maps.InfoWindow();
 
       var image = 'img/valve.png';
-      var valveMarker = new google.maps.Marker({
+      _this.valveMarker = new google.maps.Marker({
         map: map,
-        position: this.valve,
+        position: this.valve.coords,
         animation: google.maps.Animation.DROP,
         icon: image,
         title: 'Valve'
       });
 
-      google.maps.event.addListener(valveMarker, 'click', function() {
-        var animation = (valveMarker.getAnimation() == null ? google.maps.Animation.BOUNCE : null);
-        console.log(animation);
-        valveMarker.setAnimation(animation);
+      google.maps.event.addListener(_this.valveMarker, 'click', function() {
+        _this.showValve();
+      });
+
+      google.maps.event.addListener(infowindow, 'closeclick', function(){
+        for(var i = 0; i < _this.markers().length; i++) {
+          if(_this.markers()[i].id == _this.selectedPlace().id) {
+            _this.markers()[i].marker.setAnimation(null);
+            _this.selectedPlace( { id:null } );
+          }
+        }
+      });
+
+      google.maps.event.addListener(valveInfowindow, 'closeclick', function(){
+        _this.showValve();
       });
 
       this.makeRequests();
+    };
+
+    this.showValve = function(){
+      _this.valveMarker.setAnimation( (_this.valveMarker.getAnimation() === null ? google.maps.Animation.BOUNCE : null) );
+      _this.valveShown( (_this.valveShown() ? false : true) );
+      if(_this.valveShown()) {
+        valveInfowindow.setContent('<div><strong>' + _this.valve.name + '</strong><br>' + _this.valve.address + '</div>');
+        valveInfowindow.open(map, _this.valveMarker);
+      } else {
+        valveInfowindow.close();
+      }
     };
 
     this.makeRequests = function(){
       var service = new google.maps.places.PlacesService(map);
 
       var foodRequest = {
-        location: this.valve,
+        location: this.valve.coords,
         types: ['restaurant', 'bar'],
         rankBy: google.maps.places.RankBy.DISTANCE
       };
       service.nearbySearch(foodRequest, this.addResultsToList);
 
       var busRequest = {
-        location: this.valve,
+        location: this.valve.coords,
         types: ['bus_station'],
         rankBy: google.maps.places.RankBy.DISTANCE
       };
       service.nearbySearch(busRequest, this.addResultsToList);
 
       var lodgingRequest = {
-        location: this.valve,
+        location: this.valve.coords,
         types: ['lodging'],
         rankBy: google.maps.places.RankBy.DISTANCE
       };
@@ -87,9 +136,21 @@ function ViewModel() {
 
     };
 
-    this.showDetails = function(id) {
+    this.showDetails = function(id, markerClick) {
+      var clickedMarker = markerClick === true ? true : false;
       var markers = _this.markers();
       var place = typeof(id) != "string" ? this : _this.getFilteredPlaceById(id);
+
+      var service = new google.maps.places.PlacesService(map);
+
+      service.getDetails({
+        placeId: place.place_id
+      }, function(place, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + place.formatted_address + '</div>');
+        }
+      });
+
 
       if(_this.selectedPlace().id == place.id) {
         for(var x = 0, y = markers.length; x < y; x++) {
@@ -106,7 +167,6 @@ function ViewModel() {
         if(markers[i].id == place.id ){
           _this.selectedPlace(place);
           markers[i].marker.setAnimation(google.maps.Animation.BOUNCE);
-          infowindow.setContent(place.name);
           infowindow.open(map, markers[i].marker);
         } else {
           if(markers[i].marker.getAnimation() == 1){
@@ -115,8 +175,9 @@ function ViewModel() {
         }
       }
 
-
-      document.getElementById('menu').scrollTop = document.getElementsByClassName('active')[0].getBoundingClientRect().top + document.getElementById('menu').scrollTop - 75;
+      if(clickedMarker){
+          document.getElementById('menu').scrollTop = document.getElementsByClassName('active')[0].getBoundingClientRect().top + document.getElementById('menu').scrollTop - 75;
+      }
     };
 
     this.getFilteredPlaceById = function(id){
@@ -187,7 +248,7 @@ function ViewModel() {
       };
 
       google.maps.event.addListener(markerObj.marker, 'click', function() {
-        _this.showDetails(place.id);
+        _this.showDetails(place.id, true);
       });
 
       this.markers.push(markerObj);
@@ -306,12 +367,6 @@ function ViewModel() {
       _this.filterByType();
     };
 }
-
-var map;
-var infowindow;
-var app = {
-    viewmodel: new ViewModel()
-};
 
 window.onload = function(){
   app.viewmodel.query.subscribe(app.viewmodel.search);

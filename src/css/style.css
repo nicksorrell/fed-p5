@@ -38,6 +38,10 @@ html, body {
   text-decoration: none;
 }
 
+#menu a:hover {
+  background: #888;
+}
+
 #menu a.active {
   background: #4673AD;
 }
@@ -79,7 +83,7 @@ html, body {
 }
 
 #menu ul li:hover {
-  background: #555;
+  background: #475E7B;
   cursor: pointer;
 }
 
