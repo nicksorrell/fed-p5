@@ -1,4 +1,5 @@
 var map;
+var streetview;
 var infowindow;
 var valveInfowindow;
 var app = {
@@ -16,7 +17,17 @@ function ViewModel() {
         lng: -122.194059
       },
       name: 'Valve Corporation',
-      address: '10900 NE 4th St, Bellevue, WA 98004'
+      address: '10900 NE 4th St, Bellevue, WA 98004',
+      streetview: {
+        coords: {
+          lat: 47.6137654,
+          lng: -122.1950236
+        },
+        pov: {
+          heading: 63,
+          pitch: 30
+        }
+      }
     };
 
     this.valveMarker = {};
@@ -27,8 +38,6 @@ function ViewModel() {
 
     this.allPlaces = ko.observableArray([]);
 
-    // TO DO: make this the main filtration array, and have the type buttons filter this
-    // have it just show all places (blank search) for init state
     this.searchedPlaces = ko.observableArray(this.allPlaces());
 
     this.filteredPlaces = ko.observableArray([]);
@@ -55,6 +64,8 @@ function ViewModel() {
       { label: 'Bus', active: false, terms: ['bus_station'] }
     ]);
 
+    this.flickrImgs = [];
+
     this.sortArrayByAlpha = function (a, b){
       if(a.name > b.name) return 1;
       if(a.name < b.name) return -1;
@@ -65,6 +76,12 @@ function ViewModel() {
       map = new google.maps.Map(document.getElementById('map'), {
         center: this.valve.coords,
         zoom: 16
+      });
+
+      streetview = new google.maps.StreetViewPanorama(
+        document.getElementById('streetview'), {
+          position: _this.valve.streetview.coords,
+          pov: _this.valve.streetview.pov
       });
 
       infowindow = new google.maps.InfoWindow();
@@ -105,6 +122,8 @@ function ViewModel() {
       if(_this.valveShown()) {
         valveInfowindow.setContent('<div><strong>' + _this.valve.name + '</strong><br>' + _this.valve.address + '</div>');
         valveInfowindow.open(map, _this.valveMarker);
+        streetview.setPosition( _this.valve.streetview.coords );
+        streetview.setPov( _this.valve.streetview.pov );
       } else {
         valveInfowindow.close();
       }
@@ -143,6 +162,7 @@ function ViewModel() {
 
       var service = new google.maps.places.PlacesService(map);
 
+
       service.getDetails({
         placeId: place.place_id
       }, function(place, status) {
@@ -178,6 +198,12 @@ function ViewModel() {
       if(clickedMarker){
           document.getElementById('menu').scrollTop = document.getElementsByClassName('active')[0].getBoundingClientRect().top + document.getElementById('menu').scrollTop - 75;
       }
+
+      streetview.setPosition( { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() } );
+      streetview.setPov({
+        heading: null,
+        pitch:20
+      });
     };
 
     this.getFilteredPlaceById = function(id){
@@ -365,6 +391,18 @@ function ViewModel() {
       // finally, filter the results and display them
       _this.searchedPlaces(tempArray);
       _this.filterByType();
+    };
+
+    this.svHidden = ko.observable(false);
+
+    this.toggleSV = function(){
+      var sv = document.getElementById('streetview');
+      if(_this.svHidden()) {
+        sv.style.right = "0";
+      } else {
+        sv.style.right = (0 - sv.getBoundingClientRect().width).toString() + "px";
+      }
+      _this.svHidden( !_this.svHidden() );
     };
 }
 

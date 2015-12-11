@@ -7,10 +7,12 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <header>
+    <h1>Let's Visit Valve!</h1>
+    <button data-bind='click: toggleSV'>Toggle Street View</button>
+  </header>
   <div id="main">
     <div id="menu">
-      <h1>Let's Visit Valve!</h1>
-      <p>TODO: Add in third-party API data</p>
       <p><a href="#" data-bind="text: valveMsg, click: showValve, css: {active: valveShown}"></a></p>
       <label for="search"><p>Filter listings by name:</p></label>
       <input type="text" name="search" placeholder="e.g., sushi" autocomplete="off" data-bind="textInput: query">
@@ -32,6 +34,7 @@
       <img src="img/miclogo-88x31.gif" alt="Map Markers">
     </div>
     <div id="map"></div>
+    <div id="streetview" data-bind="css: { hidden: svHidden() }"></div>
   </div>
 
   <script src="js/vendor/knockout-3.4.0.js"></script>
