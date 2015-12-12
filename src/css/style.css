@@ -16,7 +16,7 @@ html, body {
 
 header {
   height: 50px;
-  background: #333;
+  background: #222;
   color: #fff;
   -moz-box-shadow: 0px 1px 3px #555;
   box-shadow: 0px 1px 3px #555;
@@ -31,7 +31,7 @@ header h1 {
   width: 20vw;
   min-width: 200px;
   padding: 10px;
-  background: #333;
+  background: #222;
   color: #fff;
   border-right: 1px solid #ccc;
   box-sizing: border-box;
@@ -124,7 +124,7 @@ header h1 {
   right: 0;
   width: 30vw;
   height: 30vh;
-  border: 1px solid #555;
+  border: 1px solid #222;
   -moz-box-shadow: -1px 1px 3px #555;
   box-shadow: -1px 1px 3px #555;
   transition: right 0.5s ease-in;
@@ -141,4 +141,16 @@ header h1 {
   border-top: 1px solid #888;
   width: 300px;
   height: 175px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888;
 }
