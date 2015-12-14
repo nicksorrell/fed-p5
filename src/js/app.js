@@ -1,17 +1,23 @@
-var map;
-var streetview;
-var infowindow;
-var valveInfowindow;
+/*****
+* Global var declarations
+*****/
 var app = {
-    viewmodel: new ViewModel()
-};
+      viewmodel: new ViewModel() // Set up a namespace + reference to the view model
+    },
+    infowindow, // For the info window on the map
+    map, // For the Google Maps view
+    streetview, // For the Google Street View view
+    valveInfowindow; // For the Valve-specific info window
 
+/*****
+* This is the Knockout viewmodel, which contains all functionality for the app
+*****/
 function ViewModel() {
    "use strict";
 
-    var _this = this;
+    var _this = this; // Create a reference to the viewmodel to avoid 'this' scoping issues
 
-    this.valve = {
+    this.valve = { // This object contains information for the specific Valve marker which is used by the map + street view
       coords: {
         lat: 47.614374,
         lng: -122.194059
@@ -19,7 +25,7 @@ function ViewModel() {
       name: 'Valve Corporation',
       address: '10900 NE 4th St, Bellevue, WA 98004',
       streetview: {
-        coords: {
+        coords: { // Street view coords are slightly different so we can get a good hard-coded shot of the building
           lat: 47.6137654,
           lng: -122.1950236
         },
@@ -30,49 +36,73 @@ function ViewModel() {
       }
     };
 
-    this.valveMarker = {};
+    this.valveMarker = {}; // Valve's location will have it's own marker apart from the queried results
 
-    this.valveShown = ko.observable(false);
+    this.valveShown = ko.observable(false); // Used to determine whether the marker is active or not
 
-    this.markers = ko.observableArray([]);
+    this.svShown = ko.observable(true); // Used to determine whether the street view panel is shown or not
 
-    this.allPlaces = ko.observableArray([]);
+    this.markers = ko.observableArray([]); // An array for all the map markers
 
-    this.searchedPlaces = ko.observableArray(this.allPlaces());
+    this.allPlaces = ko.observableArray([]); // An array for all the map places query results
 
-    this.filteredPlaces = ko.observableArray([]);
+    this.searchedPlaces = ko.observableArray(this.allPlaces()); // Used to hold filtered (via search) results. Default state is the full list
 
-    this.selectedPlace = ko.observable({
+    this.filteredPlaces = ko.observableArray([]); // Used to hold results filtered from the search results via the type-filter (e.g., Bus) buttons
+
+    this.selectedPlace = ko.observable({ // Identifies the current selected place by ID
       id:null
     });
 
-    this.query = ko.observable('');
+    this.query = ko.observable(''); // Used to track the input search query
 
-    this.searching = ko.observable(false);
+    this.searching = ko.observable(false); // Used to determine whether the user is searching or not
 
-    this.valveMsg = ko.computed(function(){
+    this.valveMsg = ko.computed(function(){ // Text for the button which displays Valve on the map
       if(_this.valveShown()) {
         return "There!";
       } else {
-        return "So where is Valve?";
+        return "Where is Valve?";
       }
     }, this);
 
-    this.filters = ko.observableArray([
+    this.svMsg = ko.computed(function(){ // Text for the button which toggles street view
+      if(_this.svShown()) {
+        return "Hide Street View";
+      } else {
+        return "Show Street View";
+      }
+    }, this);
+
+    this.filters = ko.observableArray([ // Available filters which get turned into buttons in the view
       { label: 'Food', active: false, terms: ['restaurant', 'bar'] },
       { label: 'Lodging', active: false, terms: ['lodging'] },
       { label: 'Bus', active: false, terms: ['bus_station'] }
     ]);
 
-    this.flickrImgs = [];
-
+    /*****
+    * VIEWMODEL FUNCTION: sortArrayByAlpha
+    * - Parameters:
+    *   NONE
+    *
+    * - Alphabetical sort function used for sorting the list of places
+    *****/
     this.sortArrayByAlpha = function (a, b){
       if(a.name > b.name) return 1;
       if(a.name < b.name) return -1;
       return 0;
     };
 
-    this.initMap = function(){
+    /*****
+    * VIEWMODEL FUNCTION: initMap
+    * - Parameters:
+    *   NONE
+    *
+    * - Called as a callback from the Google Maps script in the view
+    * - Initializes the map and street view views, infowindows, and Valve marker
+    * - Runs the makeRequests viewmodel function to request places via AJAX
+    *****/
+    this.initMap = function() {
       map = new google.maps.Map(document.getElementById('map'), {
         center: this.valve.coords,
         zoom: 16
@@ -113,9 +143,16 @@ function ViewModel() {
         _this.showValve();
       });
 
-      this.makeRequests();
+      this.makeRequests(); // Request lists of places via AJAX
     };
 
+    /*****
+    * VIEWMODEL FUNCTION: showValve
+    * - Parameters:
+    *   NONE
+    *
+    * - Toggles the Valve map marker and infowindow, and sets the street view to Valve
+    *****/
     this.showValve = function(){
       _this.valveMarker.setAnimation( (_this.valveMarker.getAnimation() === null ? google.maps.Animation.BOUNCE : null) );
       _this.valveShown( (_this.valveShown() ? false : true) );
@@ -129,6 +166,14 @@ function ViewModel() {
       }
     };
 
+    /*****
+    * VIEWMODEL FUNCTION: makeRequests
+    * - Parameters:
+    *   NONE
+    *
+    * - Declares and runs three AJAX requests for places from Google
+    * - Each request corresponds to a type of place: restaurant/bar, bus station, and lodging
+    *****/
     this.makeRequests = function(){
       var service = new google.maps.places.PlacesService(map);
 
@@ -155,23 +200,36 @@ function ViewModel() {
 
     };
 
+    /*****
+    * VIEWMODEL FUNCTION: showDetails
+    * - Parameters
+    *     id: (string) the ID of the clicked place
+    *     markerClick: (bool) whether the click originated from the menu or a map marker
+    *
+    * - Run when a place is clicked.
+    * - Looks up the details, such as name and address, for the clicked place
+    * - Handles map marker and street view activation
+    *****/
     this.showDetails = function(id, markerClick) {
       var clickedMarker = markerClick === true ? true : false;
       var markers = _this.markers();
-      var place = typeof(id) != "string" ? this : _this.getFilteredPlaceById(id);
+      var place = typeof(id) != "string" ? this : _this.getFilteredPlaceById(id); // The place needs to be looked up by ID if it comes from the menu, since Knockout passed the full object
 
       var service = new google.maps.places.PlacesService(map);
 
-
+      // AJAX request for place details from Google
       service.getDetails({
         placeId: place.place_id
       }, function(place, status) {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
           infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + place.formatted_address + '</div>');
+        } else {
+          console.log('Place details lookup request failed. STATUS: ' + status);
         }
       });
 
 
+      // If the selected place is selected again, close the info window and de-select the map marker
       if(_this.selectedPlace().id == place.id) {
         for(var x = 0, y = markers.length; x < y; x++) {
           if(markers[x].marker.getAnimation() == 1){
@@ -183,6 +241,7 @@ function ViewModel() {
         return;
       }
 
+      // Loop through the markers to find the one with the matching ID, and activate it and the infowindow
       for(var i = 0, j = markers.length; i < j; i++) {
         if(markers[i].id == place.id ){
           _this.selectedPlace(place);
@@ -195,17 +254,27 @@ function ViewModel() {
         }
       }
 
+      // If a map marker was clicked, scroll the menu to show the active place
       if(clickedMarker){
           document.getElementById('menu').scrollTop = document.getElementsByClassName('active')[0].getBoundingClientRect().top + document.getElementById('menu').scrollTop - 75;
       }
 
+      // Set the street view view to the location of the selected place
       streetview.setPosition( { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() } );
       streetview.setPov({
-        heading: null,
+        heading: 0,
         pitch:20
       });
     };
 
+    /*****
+    * VIEWMODEL FUNCTION: getFilteredPlaceById
+    * - Parameters
+    *     id: (string) the ID of the place to look up
+    *
+    * - Takes an ID and returns the full place object that matches the ID
+    * - ... this is done because Knockout passes the view object calling an event, but we want the place object in the gathered list
+    *****/
     this.getFilteredPlaceById = function(id){
       for(var i = 0, j = this.filteredPlaces().length; i < j; i++){
         if(this.filteredPlaces()[i].id == id){
@@ -215,10 +284,20 @@ function ViewModel() {
       return null;
     };
 
+    /*****
+    * VIEWMODEL FUNCTION: addResultsToList
+    * - Parameters
+    *     results: (array) a list of returned objects from an AJAX call
+    *     status: (number) the status of the AJAX response
+    *
+    * - Runs as a callback to the requests made in the makeRequests function
+    * - Loops through retured results and picks out the ones necessary for the application (food, lodging, bus stations)
+    *****/
     this.addResultsToList = function(results, status){
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         var duplicate = false;
         var k = _this.allPlaces.length;
+
         for (var i = 0; i < results.length; i++) {
           // Only store the results that are primarily what we want. For example, no gym that has a smoothie bar being counted as a restaurant.
           if(results[i].types[0] == 'restaurant' || results[i].types[0] == 'bar' || results[i].types[0] == 'lodging' || results[i].types[0] == 'bus_station') {
@@ -232,7 +311,7 @@ function ViewModel() {
                 }
               }
 
-              // When the loop is finished, if we have a unique entry, add it to the main list
+              // When the loop is finished, if we have a unique entry, add it to the main list through the createMarker function
               if(!duplicate){
                 results[i].active = false;
                 _this.allPlaces.push(results[i]);
@@ -242,14 +321,25 @@ function ViewModel() {
               }
           }
         }
+      } else {
+        console.log('Google Places request failed. STATUS: ' + status);
       }
     };
 
+    /*****
+    * VIEWMODEL FUNCTION: createMarker
+    * - Parameters
+    *     place: (object) a place from the retured lists requested via AJAX
+    *
+    * - Creates a marker on the map view using the info in the passed in place
+    * - Adds the marker to the list of markers
+    *****/
     this.createMarker = function(place) {
       var placeLoc = place.geometry.location;
 
       var image = "";
 
+      // Use the marker image corresponding with the place type
       switch(place.types[0]){
         case 'lodging':
           image = 'img/lodging.png';
@@ -280,9 +370,17 @@ function ViewModel() {
       this.markers.push(markerObj);
     };
 
+    /*****
+    * VIEWMODEL FUNCTION: filterByType
+    * - Parameters:
+    *   NONE
+    *
+    * - Called by the filter buttons in the view
+    * - Modifies the displayed list of places with matches for the filter type (read from the event object)
+    *****/
     this.filterByType = function() {
 
-      // Get the selected filter for lookup, and init vars for the function
+      // Get the selected filter for lookup, and declare vars for the function
       var filterType = event.target.getAttribute('data-filter');
       var tempArray = [];
       var anyFilterActive = false;
@@ -306,8 +404,9 @@ function ViewModel() {
         }
       }
 
-      // If the reset option is selected, set all filters to inactive. Or if no filters are active anyway...
-      if(filterType == 'reset' || !anyFilterActive){
+      // If there are no active filters...
+      if(!anyFilterActive){
+        // But if searching... just show the results from the search
         if(_this.searching()){
           tempArray = _this.searchedPlaces();
           for(filter in _this.filters()){
@@ -318,6 +417,7 @@ function ViewModel() {
             });
           }
         } else {
+          // And if searching... show all the places, since no form of filtering is active
           tempArray = _this.allPlaces();
           for(filter in _this.filters()){
             _this.filters.replace(_this.filters()[filter], {
@@ -327,10 +427,9 @@ function ViewModel() {
             });
           }
         }
-        // Put all our results in the temp array since we're not filtering
-
       } else {
-        // look at each filter, if it is active, push matches into the temp array...
+        // There are active filters, so...
+        // If searching too, filter places from the search-filtered place list (searchedPlaces array)
         if(_this.searching()){
           for(filter in _this.filters()){
             if(_this.filters()[filter].active === true){
@@ -344,6 +443,7 @@ function ViewModel() {
             }
           }
         } else {
+          // If not searching, filter places from the list of all places (allPlaces array)
           for(filter in _this.filters()){
             if(_this.filters()[filter].active === true){
               for(var m = 0, n = _this.allPlaces().length; m < n; m++) {
@@ -358,12 +458,20 @@ function ViewModel() {
         }
       }
 
-      // finally, filter the results and display them
+      // Finally, adjust the displayed list of places and call the filterMarkers function
       tempArray.sort(_this.sortArrayByAlpha);
       _this.filteredPlaces(tempArray);
       _this.filterMarkers();
     };
 
+    /*****
+    * VIEWMODEL FUNCTION: filterMarkers
+    * - Parameters:
+    *   NONE
+    *
+    * - Called by the filterByType function
+    * - Compares filtered places and marker list, and only shows markers whose ID matches a filtered place
+    *****/
     this.filterMarkers = function() {
       for(var i = 0, j = this.markers().length; i < j; i++) {
         this.markers()[i].marker.setMap(null);
@@ -375,6 +483,14 @@ function ViewModel() {
       }
     };
 
+    /*****
+    * VIEWMODEL FUNCTION: search
+    * - Parameters
+    *     query: (string) user-inputted text from the view text input
+    *
+    * - Adjusts the list of searched places based on the query string
+    * - Calls the main filtering function (filterByType) to adjust the displayed list of places
+    *****/
     this.search = function(query){
       var tempArray = [];
 
@@ -388,24 +504,34 @@ function ViewModel() {
         }
       }
 
-      // finally, filter the results and display them
       _this.searchedPlaces(tempArray);
       _this.filterByType();
     };
 
-    this.svHidden = ko.observable(false);
-
+    /*****
+    * VIEWMODEL FUNCTION: toggleSV
+    * - Parameters:
+    *   NONE
+    *
+    * - Called by the view button to toggle street view
+    * - Adjusts the 'right' position of the street view panel to show or hide it
+    *****/
     this.toggleSV = function(){
       var sv = document.getElementById('streetview');
-      if(_this.svHidden()) {
-        sv.style.right = "0";
+      if(_this.svShown()) {
+        sv.style.right = ((0 - sv.getBoundingClientRect().width).toString() - 50).toString() + "px";
       } else {
-        sv.style.right = (0 - sv.getBoundingClientRect().width).toString() + "px";
+        sv.style.right = "0";
       }
-      _this.svHidden( !_this.svHidden() );
+      _this.svShown( ( _this.svShown() ? false : true ) );
     };
 }
 
+/*****
+* Window load event function.
+* - Subscribe the viewmodel query observable to the viewmodel search observable
+* - Set up the Knockout viewmodel bindings so everything will function
+*****/
 window.onload = function(){
   app.viewmodel.query.subscribe(app.viewmodel.search);
   ko.applyBindings(app.viewmodel);

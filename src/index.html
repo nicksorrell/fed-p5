@@ -9,16 +9,20 @@
 <body>
   <header>
     <h1>Let's Visit Valve!</h1>
-    <button data-bind='click: toggleSV'>Toggle Street View</button>
+    <p>We're going to visit Valve in Bellevue, WA. To make the most of our time, we'll need to know where the nearby places to eat and sleep are, and how to easily get around.</p>
   </header>
   <div id="main">
     <div id="menu">
-      <p><a href="#" data-bind="text: valveMsg, click: showValve, css: {active: valveShown}"></a></p>
+      <p class="instructions">Use the menu to look around nearby places, and select one for its address and street view imagery if available.</p>
+      <p>
+        <!--a href="#" data-bind="text: valveMsg, click: showValve, css: {active: valveShown}">Loading...</a-->
+        <a href="#" data-bind='text: svMsg, click: toggleSV' class="sv-toggle">Loading...</a>
+      </p>
       <label for="search"><p>Filter listings by name:</p></label>
       <input type="text" name="search" placeholder="e.g., sushi" autocomplete="off" data-bind="textInput: query">
       <p>Filter listings by type:</p>
       <nav data-bind="foreach: filters">
-        <a href="#" data-bind="text: $data.label, click: $parent.filterByType, css: {active: $data.active}, attr: {'data-filter': $data.label}"></a>
+        <a href="#" data-bind="text: $data.label, click: $parent.filterByType, css: {active: $data.active}, attr: {'data-filter': $data.label}">Loading...</a>
       </nav>
 
       <ul data-bind="foreach: filteredPlaces">
@@ -28,13 +32,13 @@
           bus: $data.types[0] == 'bus_station',
           food: $data.types[0] == 'restaurant' || $data.types[0] == 'bar',
           lodging: $data.types[0] == 'lodging'
-        }"></li>
+        }">Loading...</li>
       </ul>
       <p>Special thanks to:</p>
-      <img src="img/miclogo-88x31.gif" alt="Map Markers">
+      <img src="img/miclogo-88x31.gif" alt="Map Icons Collection">
     </div>
     <div id="map"></div>
-    <div id="streetview" data-bind="css: { hidden: svHidden() }"></div>
+    <div id="streetview" data-bind="css: { hidden: !svShown() }"></div>
   </div>
 
   <script src="js/vendor/knockout-3.4.0.js"></script>
