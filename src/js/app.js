@@ -80,6 +80,15 @@ function ViewModel() {
       { label: 'Bus', active: false, terms: ['bus_station'] }
     ]);
 
+    try {
+      if(localStorage.getItem('LVV-svShown') !== null){
+        console.log(localStorage.getItem('LVV-svShown'));
+        _this.svShown( localStorage.getItem('LVV-svShown') == "true" ? true : false );
+      }
+    } catch(e) {
+      console.log('Failed to get Steet View toggle setting on localStorage: ' + e);
+    }
+
     /*****
     * VIEWMODEL FUNCTION: sortArrayByAlpha
     * - Parameters:
@@ -527,7 +536,15 @@ function ViewModel() {
       } else {
         sv.style.right = "0";
       }
-      _this.svShown( ( _this.svShown() ? false : true ) );
+      var isSVShown = _this.svShown() ? false : true;
+
+      try {
+        localStorage.setItem('LVV-svShown', isSVShown);
+      } catch(e) {
+        console.log('Failed to set Steet View toggle setting on localStorage: ' + e);
+      }
+
+      _this.svShown( isSVShown );
     };
 }
 
