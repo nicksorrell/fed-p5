@@ -66,10 +66,15 @@ header p {
   color: #fff;
   background: #555;
   padding: 10px;
+  margin-right: 5px;
   border: none;
   border-radius: 5px;
   line-height: 2em;
   text-decoration: none;
+}
+
+#menu a:last-of-type {
+  margin-right: 0;
 }
 
 #menu a:hover {
