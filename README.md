@@ -46,3 +46,6 @@ The app requests list of places from the Google Places service, and gathers all 
 The user can search through results by name, and filter results by type.
 
 When the user selects a place, the place name and address will be shown on the map, and a street view for the place will be requested from Google's Street View service.
+
+## License
+This project is released under the [MIT License] (http://opensource.org/licenses/MIT).
