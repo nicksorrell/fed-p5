@@ -6,8 +6,7 @@ var app = {
     },
     infowindow, // For the info window on the map
     map, // For the Google Maps view
-    streetview, // For the Google Street View view
-    valveInfowindow; // For the Valve-specific info window
+    streetview; // For the Google Street View view
 
 /*****
 * This is the Knockout viewmodel, which contains all functionality for the app
@@ -80,9 +79,8 @@ function ViewModel() {
       { label: 'Bus', active: false, terms: ['bus_station'] }
     ]);
 
-    try {
+    try { // Check to see if we can pull the Street View toggle state from localStorage, and set the KO observable if so
       if(localStorage.getItem('LVV-svShown') !== null){
-        console.log(localStorage.getItem('LVV-svShown'));
         _this.svShown( localStorage.getItem('LVV-svShown') == "true" ? true : false );
       }
     } catch(e) {
@@ -124,7 +122,6 @@ function ViewModel() {
       });
 
       infowindow = new google.maps.InfoWindow();
-      valveInfowindow = new google.maps.InfoWindow();
 
       var image = 'img/valve.png';
       _this.valveMarker = new google.maps.Marker({
@@ -146,10 +143,10 @@ function ViewModel() {
             _this.selectedPlace( { id:null } );
           }
         }
-      });
-
-      google.maps.event.addListener(valveInfowindow, 'closeclick', function(){
-        _this.showValve();
+        if(_this.valveShown()){
+          _this.valveMarker.setAnimation( null );
+          this.valveShown(false);
+        }
       });
 
       this.makeRequests(); // Request lists of places via AJAX
@@ -170,12 +167,12 @@ function ViewModel() {
       _this.valveMarker.setAnimation( (_this.valveMarker.getAnimation() === null ? google.maps.Animation.BOUNCE : null) );
       _this.valveShown( (_this.valveShown() ? false : true) );
       if(_this.valveShown()) {
-        valveInfowindow.setContent('<div><strong>' + _this.valve.name + '</strong><br>' + _this.valve.address + '</div>');
-        valveInfowindow.open(map, _this.valveMarker);
+        infowindow.setContent('<div><strong>' + _this.valve.name + '</strong><br>' + _this.valve.address + '</div>');
+        infowindow.open(map, _this.valveMarker);
         streetview.setPosition( _this.valve.streetview.coords );
         streetview.setPov( _this.valve.streetview.pov );
       } else {
-        valveInfowindow.close();
+        infowindow.close();
       }
     };
 
@@ -278,6 +275,11 @@ function ViewModel() {
         heading: 0,
         pitch:20
       });
+
+      if(this.valveShown()){
+        this.valveMarker.setAnimation( null );
+        this.valveShown(false);
+      }
     };
 
     /*****
