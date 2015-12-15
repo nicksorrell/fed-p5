@@ -144,6 +144,10 @@ function ViewModel() {
       });
 
       this.makeRequests(); // Request lists of places via AJAX
+
+      // Show the user where Valve is when the map loads
+      _this.showValve();
+      _this.valveMarker.setAnimation(google.maps.Animation.BOUNCE);
     };
 
     /*****
