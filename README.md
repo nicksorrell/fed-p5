@@ -1,6 +1,8 @@
 # Let's Visit Valve!
 This is a single-page application I built as one of my projects while completing the Front-End Web Developer Nanodegree on Udacity.
 
+[Live example] (http://nicksorrell.com/udacity/fedp5/)
+
 The purpose of the project was to create a neighborhood tour app that shows relevant info about notable locations via third-party APIs.
 
 The app uses Google Maps and Street View to show users a filterable list of useful places around Valve Corporation's building in Bellevue, WA. Locations shown are:
