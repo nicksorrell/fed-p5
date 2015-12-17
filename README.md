@@ -14,10 +14,9 @@ The app uses Google Maps and Street View to show users a filterable list of usef
 ## Installation
 Clone the Github repo and install via npm:
 
-````
-git clone https://github.com/nicksorrell/fed-p5.git
-npm install
-````
+`git clone https://github.com/nicksorrell/fed-p5.git`
+
+`npm install`
 
 ## How to Run
 Running the app is as simple as making the files in the _dist_ folder (the _src_ folder works too if you want to debug) available on a web server. You can use your own online, or run Python or XAMPP -- whatever you like.
@@ -27,9 +26,7 @@ If you want to to build the source files into their minified and concatenated ve
 
 - Run the default Gulp task to optimize images, minify and concatenate CSS and JS files
 
-````
-gulp
-````
+`gulp`
 
 - Edit _index.html_ so that:
  - Only the _style.css_ stylesheet link is present
@@ -37,9 +34,7 @@ gulp
 
 - Run the _html-min_ Gulp task to minify _index.html_
 
-````
-gulp html-min
-````
+`gulp html-min`
 
 ## How it Works
 The app uses _Knockout_ to provide overall MV* functionality.
