@@ -268,7 +268,7 @@ function ViewModel() {
 
               // Choose a random image from the photo list
               var randomImg = flickrImgs.photos.photo[Math.floor(Math.random() * (flickrImgs.photos.photo.length) + 1)];
-              
+
               //Create a blurb and image after the random image has been chosen
               infowindowContent = infowindow.getContent() +
                 '<hr><div class="iw-flex"><div class="iw-flex-text"><p class="flickrinfo">Get a closer look at the area! Here\'s a random Flickr image taken near ' +
@@ -280,9 +280,13 @@ function ViewModel() {
 
             infowindow.setContent(infowindowContent);
             //This removes the "small" indicator (_s) from the URL so a larger image can be shown
-            document.getElementById('flickr').addEventListener('click', function(){
-              lightbox.open(document.getElementById('flickr').src.replace('_s', ''));
-            });
+            try {
+              document.getElementById('flickr').addEventListener('click', function(){
+                lightbox.open(document.getElementById('flickr').src.replace('_s', ''));
+              });
+            } catch(e) {
+              console.log("Oops, couldn't make the image clickable! (Error: " + e + ")");
+            }
           }
         };
         xhr.open("GET", flickrURL, true);
@@ -326,9 +330,9 @@ function ViewModel() {
         pitch:20
       });
 
-      if(this.valveShown()){
-        this.valveMarker.setAnimation( null );
-        this.valveShown(false);
+      if(_this.valveShown()){
+        _this.valveMarker.setAnimation( null );
+        _this.valveShown(false);
       }
     };
 
