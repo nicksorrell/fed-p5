@@ -145,7 +145,7 @@ function ViewModel() {
         }
         if(_this.valveShown()){
           _this.valveMarker.setAnimation( null );
-          this.valveShown(false);
+          _this.valveShown(false);
         }
       });
 
@@ -225,6 +225,8 @@ function ViewModel() {
       var markers = _this.markers();
       var place = typeof(id) != "string" ? this : _this.getFilteredPlaceById(id); // The place needs to be looked up by ID if it comes from the menu, since Knockout passed the full object
 
+      var infowindowContent = "";
+
       var service = new google.maps.places.PlacesService(map);
 
       // AJAX request for place details from Google
@@ -232,12 +234,40 @@ function ViewModel() {
         placeId: place.place_id
       }, function(place, status) {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
-          infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + place.formatted_address + '</div>');
+          infowindowContent = '<div><strong>' + place.name + '</strong><br>' + place.formatted_address + '</div>';
         } else {
-          console.log('Place details lookup request failed. STATUS: ' + status);
+          infowindowContent = '<p>Place details lookup request failed, sorry! STATUS: ' + status + '</p>';
         }
+        infowindow.setContent(infowindowContent);
+        flickrReq();
       });
 
+      function flickrReq(){
+        // AJAX request for a random Flickr image for the place
+        var flickrURL = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=c1a7eab619087ccae98ce36753b8c3f4&accuracy=16" +
+          "&lat=" + place.geometry.location.lat() + "&lon=" + place.geometry.location.lng() + "&radius=1&extras=url_sq%2C+url_o&format=json&nojsoncallback=1";
+
+        var xhr = new XMLHttpRequest();
+
+        xhr.onreadystatechange = function(){
+          if (xhr.readyState == 4){
+            if(xhr.status == 200) {
+              var flickrImgs = JSON.parse(xhr.response);
+              var randomImg = flickrImgs.photos.photo[Math.floor(Math.random() * (flickrImgs.photos.photo.length) + 1)];
+              infowindowContent = infowindow.getContent() + '<hr><div class="iw-flex"><div class="iw-flex-text"><p class="flickrinfo">Get a closer look at the area! Here\'s a random Flickr image near ' + place.name +
+                '!</p></div><div class="iw-flex-img"><img id="flickr" class="flickrimg" src="' + randomImg.url_sq + '" alt="' + randomImg.title + '"><p>' + (randomImg.title !== '' ? ('<i>'+randomImg.title+'</i>') : '') + '</p></div>';
+            } else {
+              infowindowContent = infowindow.getContent() + '<p>Flickr image request failed, sorry! STATUS: ' + xhr.status + '</p>';
+            }
+            infowindow.setContent(infowindowContent);
+            document.getElementById('flickr').addEventListener('click', function(){
+              lightbox.open(document.getElementById('flickr').src.replace('_s', ''));
+            });
+          }
+        };
+        xhr.open("GET", flickrURL, true);
+        xhr.send();
+      }
 
       // If the selected place is selected again, close the info window and de-select the map marker
       if(_this.selectedPlace().id == place.id) {

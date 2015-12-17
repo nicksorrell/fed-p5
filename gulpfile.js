@@ -18,6 +18,7 @@ gulp.task('css', function(){
         .pipe(gulp.dest('dist/css'))
         .pipe(autoprefixer())
         .pipe(minifycss())
+        .pipe(concat('style.css'))
         .pipe(gulp.dest('dist/css'));
 });
 
