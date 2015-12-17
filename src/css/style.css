@@ -157,7 +157,7 @@ header p {
 }
 
 #streetview.hidden {
-  right: -500px;
+  visibility: hidden;
 }
 
 #infoImg {

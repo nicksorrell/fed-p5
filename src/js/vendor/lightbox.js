@@ -846,7 +846,7 @@ function Lightbox() {
 
         // show overflow by default / if set
         if (!CTX.opt || !isset(CTX.opt.hideOverflow) || CTX.opt.hideOverflow) {
-            body.setAttribute('style', 'overflow: auto');
+            body.setAttribute('style', 'overflow: hidden');
         }
 
         // execute close callback
@@ -855,4 +855,3 @@ function Lightbox() {
         }
     };
 }
-

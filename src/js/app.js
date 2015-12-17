@@ -586,12 +586,6 @@ function ViewModel() {
     * - Adjusts the 'right' position of the street view panel to show or hide it
     *****/
     this.toggleSV = function(){
-      var sv = document.getElementById('streetview');
-      if(_this.svShown()) {
-        sv.style.right = ((0 - sv.getBoundingClientRect().width).toString() - 50).toString() + "px";
-      } else {
-        sv.style.right = "0";
-      }
       var isSVShown = _this.svShown() ? false : true;
 
       try {

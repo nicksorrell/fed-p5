@@ -16,7 +16,7 @@
     <div id="menu">
       <p class="instructions">Use the menu to look around nearby places, and select one for its address and street view imagery if available.</p>
       <p>
-        <a href="#" data-bind='text: svMsg, click: toggleSV' class="sv-toggle">Loading...</a>
+        <a href="#" data-bind='text: svMsg, click: toggleSV, css: { hidden: !svShown }' class="sv-toggle">Loading...</a>
       </p>
       <label for="search"><p>Filter listings by name:</p></label>
       <input type="text" name="search" placeholder="e.g., sushi" autocomplete="off" data-bind="textInput: query">
