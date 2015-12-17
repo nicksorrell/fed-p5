@@ -238,10 +238,20 @@ function ViewModel() {
         } else {
           infowindowContent = '<p>Place details lookup request failed, sorry! STATUS: ' + status + '</p>';
         }
+
         infowindow.setContent(infowindowContent);
         flickrReq();
       });
 
+      /*****
+      * showDetails INNER FUNCTION: flickrReq
+      * - Parameters
+      *     NONE
+      *
+      * - Run after Google Places returns results for a selected place
+      * - Makes an AJAX call to Flickr using the place's location and returns
+      *   a random image, which is added to the map infowindow
+      *****/
       function flickrReq(){
         // AJAX request for a random Flickr image for the place
         var flickrURL = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=c1a7eab619087ccae98ce36753b8c3f4&accuracy=16" +
@@ -250,16 +260,26 @@ function ViewModel() {
         var xhr = new XMLHttpRequest();
 
         xhr.onreadystatechange = function(){
-          if (xhr.readyState == 4){
-            if(xhr.status == 200) {
+          if (xhr.readyState == 4){ // We have a complete and...
+            if(xhr.status == 200) { // ...good response.
               var flickrImgs = JSON.parse(xhr.response);
+              // If no photos come back, we don't need to go any further
+              if(flickrImgs.photos.photo.length < 1) return;
+
+              // Choose a random image from the photo list
               var randomImg = flickrImgs.photos.photo[Math.floor(Math.random() * (flickrImgs.photos.photo.length) + 1)];
-              infowindowContent = infowindow.getContent() + '<hr><div class="iw-flex"><div class="iw-flex-text"><p class="flickrinfo">Get a closer look at the area! Here\'s a random Flickr image near ' + place.name +
-                '!</p></div><div class="iw-flex-img"><img id="flickr" class="flickrimg" src="' + randomImg.url_sq + '" alt="' + randomImg.title + '"><p>' + (randomImg.title !== '' ? ('<i>'+randomImg.title+'</i>') : '') + '</p></div>';
+              
+              //Create a blurb and image after the random image has been chosen
+              infowindowContent = infowindow.getContent() +
+                '<hr><div class="iw-flex"><div class="iw-flex-text"><p class="flickrinfo">Get a closer look at the area! Here\'s a random Flickr image taken near ' +
+                place.name +
+                '!</p></div><div class="iw-flex-img"><img id="flickr" class="flickrimg" src="' + randomImg.url_sq + '" alt="' + randomImg.title + '"></div>';
             } else {
               infowindowContent = infowindow.getContent() + '<p>Flickr image request failed, sorry! STATUS: ' + xhr.status + '</p>';
             }
+
             infowindow.setContent(infowindowContent);
+            //This removes the "small" indicator (_s) from the URL so a larger image can be shown
             document.getElementById('flickr').addEventListener('click', function(){
               lightbox.open(document.getElementById('flickr').src.replace('_s', ''));
             });

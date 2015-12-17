@@ -31,7 +31,7 @@ If you want to to build the source files into their minified and concatenated ve
 gulp
 ````
 
-- Edit _index.html_ so that only the built _app.js_ file and the Google Maps scripts are present
+- Edit _index.html_ so that only the built _style.css_ stylesheet, and the _app.js_ and the Google Maps scripts are present
 - Run the _html-min_ Gulp task to minify _index.html_
 
 ````

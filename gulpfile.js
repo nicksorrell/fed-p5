@@ -1,6 +1,7 @@
 var gulp = require('gulp'),
     uglify = require('gulp-uglify'),
     concat = require('gulp-concat'),
+    concatCSS = require('gulp-concat-css'),
     autoprefixer = require('gulp-autoprefixer'),
     minifycss = require('gulp-minify-css'),
     minifyHTML = require('gulp-minify-html'),
@@ -15,10 +16,9 @@ gulp.task('img', function(){
 
 gulp.task('css', function(){
   return gulp.src('src/css/*.css')
-        .pipe(gulp.dest('dist/css'))
+        .pipe(concatCSS('style.css'))
         .pipe(autoprefixer())
         .pipe(minifycss())
-        .pipe(concat('style.css'))
         .pipe(gulp.dest('dist/css'));
 });
 
