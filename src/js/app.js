@@ -254,7 +254,7 @@ function ViewModel() {
       *****/
       function flickrReq(){
         // AJAX request for a random Flickr image for the place
-        var flickrURL = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=c1a7eab619087ccae98ce36753b8c3f4&accuracy=16" +
+        var flickrURL = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=006be012bad8d36a3b22ab7bf7c88232&accuracy=16" +
           "&lat=" + place.geometry.location.lat() + "&lon=" + place.geometry.location.lng() + "&radius=1&extras=url_sq%2C+url_o&format=json&nojsoncallback=1";
 
         var xhr = new XMLHttpRequest();
@@ -263,8 +263,11 @@ function ViewModel() {
           if (xhr.readyState == 4){ // We have a complete and...
             if(xhr.status == 200) { // ...good response.
               var flickrImgs = JSON.parse(xhr.response);
-              // If no photos come back, we don't need to go any further
-              if(flickrImgs.photos.photo.length < 1) return;
+
+              // If the request fails, we don't need to go any further
+              if(flickrImgs.stat == "fail") {
+                return console.log("Flickr image request failed, sorry! (" + flickrImgs.code + ") " + flickrImgs.message);
+              }
 
               // Choose a random image from the photo list
               var randomImg = flickrImgs.photos.photo[Math.floor(Math.random() * (flickrImgs.photos.photo.length) + 1)];
