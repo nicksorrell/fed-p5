@@ -41,6 +41,8 @@ function ViewModel() {
 
     this.svShown = ko.observable(true); // Used to determine whether the street view panel is shown or not
 
+    this.menuShown = ko.observable(true); // Used to determine whether the street view panel is shown or not
+
     this.markers = ko.observableArray([]); // An array for all the map markers
 
     this.allPlaces = ko.observableArray([]); // An array for all the map places query results
@@ -85,6 +87,14 @@ function ViewModel() {
       }
     } catch(e) {
       console.log('Failed to get Steet View toggle setting on localStorage: ' + e);
+    }
+
+    try { // Check to see if we can pull the menutoggle state from localStorage, and set the KO observable if so
+      if(localStorage.getItem('LVV-menuShown') !== null){
+        _this.menuShown( localStorage.getItem('LVV-menuShown') == "true" ? true : false );
+      }
+    } catch(e) {
+      console.log('Failed to get menu toggle setting on localStorage: ' + e);
     }
 
     /*****
@@ -586,7 +596,7 @@ function ViewModel() {
     *   NONE
     *
     * - Called by the view button to toggle street view
-    * - Adjusts the 'right' position of the street view panel to show or hide it
+    * - Adjusts the visibility of the street view panel to show or hide it
     *****/
     this.toggleSV = function(){
       var isSVShown = _this.svShown() ? false : true;
@@ -598,6 +608,26 @@ function ViewModel() {
       }
 
       _this.svShown( isSVShown );
+    };
+
+    /*****
+    * VIEWMODEL FUNCTION: toggleMenu
+    * - Parameters:
+    *   NONE
+    *
+    * - Called by the menu hamburger button to toggle the menu
+    * - Adjusts the 'left' position of the menu show or hide it
+    *****/
+    this.toggleMenu = function(){
+      var isMenuShown = _this.menuShown() ? false : true;
+
+      try {
+        localStorage.setItem('LVV-menuShown', isMenuShown);
+      } catch(e) {
+        console.log('Failed to set Steet View toggle setting on localStorage: ' + e);
+      }
+
+      _this.menuShown( isMenuShown );
     };
 }
 
