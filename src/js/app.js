@@ -174,6 +174,15 @@ function ViewModel() {
     * - Toggles the Valve map marker and infowindow, and sets the street view to Valve
     *****/
     this.showValve = function(){
+      // Turn off animation on any active markers
+      var markers = _this.markers();
+      for(var x = 0, y = markers.length; x < y; x++) {
+        if(markers[x].marker.getAnimation() == 1){
+          markers[x].marker.setAnimation(null);
+        }
+      }
+
+      // Open the special Valve marker
       _this.valveMarker.setAnimation( (_this.valveMarker.getAnimation() === null ? google.maps.Animation.BOUNCE : null) );
       _this.valveShown( (_this.valveShown() ? false : true) );
       if(_this.valveShown()) {
